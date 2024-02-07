@@ -2,13 +2,10 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/lib/pq"
-	"go-tenancy/identifier"
 	"go-tenancy/tenancy"
 	"log"
 	"os"
-	"strconv"
 )
 
 var source *sql.DB
@@ -24,21 +21,40 @@ func Initialize() {
 		log.Fatal(err)
 	}
 
-	var query = fmt.Sprintf("CREATE TABLE IF NOT EXISTS tenancies (id VARCHAR(%v) PRIMARY KEY, name VARCHAR(64))", strconv.Itoa(int(identifier.Size())))
-	if _, err := db.Exec(query); err != nil {
+	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS tenancies (id VARCHAR(8) PRIMARY KEY, name VARCHAR(64), key VARCHAR(64))"); err != nil {
 		log.Fatal(err)
 	}
 
-	if _, err := db.Exec(
-		"INSERT INTO tenancies (id, name) VALUES ('d0f161f6', 'Cwen'), ('f43treg1', 'Brah') ON CONFLICT DO NOTHING"); err != nil {
+	statement, err := db.Prepare("INSERT INTO tenancies(id, name, key) VALUES ($1, $2, $3)")
+	if err != nil {
 		log.Fatal(err)
+	}
+
+	defer func(statement *sql.Stmt) {
+		err := statement.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(statement)
+
+	var names = [3]string{"The", "Brush", "James"}
+
+	for i := 0; i < len(names); i++ {
+		instance := tenancy.Create()
+
+		tenancy.Name(instance, names[i])
+
+		_, err := statement.Exec(instance.Id, instance.Name, instance.Key)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	source = db
 }
 
 func Tenancies(tenancies *[]*tenancy.Tenancy) {
-	rows, err := source.Query("SELECT id, name FROM tenancies")
+	rows, err := source.Query("SELECT id, name, key FROM tenancies")
 
 	if err != nil {
 		log.Fatal(err)
@@ -54,7 +70,37 @@ func Tenancies(tenancies *[]*tenancy.Tenancy) {
 	for rows.Next() {
 		instance := tenancy.Create()
 
-		if err := rows.Scan(&instance.Id, &instance.Name); err != nil {
+		if err := rows.Scan(&instance.Id, &instance.Name, &instance.Key); err != nil {
+			log.Fatal(err)
+		}
+
+		*tenancies = append(*tenancies, instance)
+	}
+}
+
+func TenancyById(tenancies *[]*tenancy.Tenancy, id string) {
+	statement, err := source.Prepare("SELECT id, name, key FROM tenancies WHERE id = $1")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rows, err := statement.Query(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(rows)
+
+	instance := tenancy.Create()
+
+	for rows.Next() {
+		if err := rows.Scan(&instance.Id, &instance.Name, &instance.Key); err != nil {
 			log.Fatal(err)
 		}
 

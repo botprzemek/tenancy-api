@@ -20,7 +20,7 @@ func main() {
 
 	database.Initialize()
 
-	router.Route("/tenancies", router.GetTenancies)
+	router.Route("/", router.GetTenancies)
 
 	log.Printf("[API] listening on http://%s/\n", address)
 	log.Fatal(http.ListenAndServe(address, nil))

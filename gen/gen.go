@@ -1,4 +1,4 @@
-package identifier
+package gen
 
 import (
 	"crypto/rand"
@@ -6,13 +6,7 @@ import (
 	"io"
 )
 
-const size int8 = 8
-
-func Size() int8 {
-	return size
-}
-
-func Create() (*[]byte, error) {
+func Create(size int8) (*[]byte, error) {
 	buf := make([]byte, size)
 
 	if _, err := io.ReadFull(rand.Reader, buf); err != nil {
@@ -22,7 +16,17 @@ func Create() (*[]byte, error) {
 	return &buf, nil
 }
 
-func Get() string {
-	buf, _ := Create()
+func Get(size int8) string {
+	buf, _ := Create(size)
 	return fmt.Sprintf("%x", *buf)[0:size]
+}
+
+func Id() string {
+	const size int8 = 8
+	return Get(size)
+}
+
+func Key() string {
+	const size int8 = 64
+	return Get(size)
 }
