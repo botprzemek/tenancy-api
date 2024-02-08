@@ -78,14 +78,14 @@ func Tenancies(tenancies *[]*tenancy.Tenancy) {
 	}
 }
 
-func TenancyById(tenancies *[]*tenancy.Tenancy, id string) {
-	statement, err := source.Prepare("SELECT id, name, key FROM tenancies WHERE id = $1")
+func TenancyByKey(tenancies *[]*tenancy.Tenancy, key string, value string) {
+	statement, err := source.Prepare("SELECT id, name, key FROM tenancies WHERE " + key + " = $1")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	rows, err := statement.Query(id)
+	rows, err := statement.Query(value)
 	if err != nil {
 		log.Fatal(err)
 	}

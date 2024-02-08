@@ -17,6 +17,13 @@ func Route(route string, handler http.HandlerFunc) {
 	http.Handle(route, middleware.Auth(handler))
 }
 
+func Authorize(req *http.Request, tenancies *[]*tenancy.Tenancy) bool {
+	if len(*tenancies) == 0 {
+		return false
+	}
+	return req.Header.Get("authorization") == (*tenancies)[0].Key
+}
+
 func GetTenancies(res http.ResponseWriter, req *http.Request) {
 	var tenancies []*tenancy.Tenancy
 
@@ -25,8 +32,6 @@ func GetTenancies(res http.ResponseWriter, req *http.Request) {
 	if parts[0] == "/" || (parts[0] == "" && parts[1] == "") {
 		database.Tenancies(&tenancies)
 	}
-
-	println(len(parts))
 
 	if len(parts[1]) == 8 {
 		regex := regexp2.MustCompile(`^[a-z0-9]{8}$`, 0)
@@ -37,18 +42,16 @@ func GetTenancies(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		database.TenancyById(&tenancies, parts[1])
+		database.TenancyByKey(&tenancies, "id", parts[1])
+
+		if !Authorize(req, &tenancies) {
+			http.NotFound(res, req)
+			return
+		}
 	}
 
 	if len(tenancies) == 0 {
 		http.Error(res, "Tenancy with this Id does not exist", 204)
-		return
-	}
-
-	valid := req.Header.Get("authorization") == tenancies[0].Key
-
-	if !valid {
-		http.NotFound(res, req)
 		return
 	}
 
