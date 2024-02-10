@@ -42,9 +42,9 @@ func Initialize() {
 	for i := 0; i < len(names); i++ {
 		instance := tenancy.Create()
 
-		tenancy.Name(instance, names[i])
+		tenancy.SetName(instance, names[i])
 
-		_, err := statement.Exec(instance.Id, instance.Name, instance.Key)
+		_, err := statement.Exec(instance.Id, instance.Data.Name, instance.Key)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -70,7 +70,7 @@ func Tenancies(tenancies *[]*tenancy.Tenancy) {
 	for rows.Next() {
 		instance := tenancy.Create()
 
-		if err := rows.Scan(&instance.Id, &instance.Name, &instance.Key); err != nil {
+		if err := rows.Scan(&instance.Id, &instance.Data.Name, &instance.Key); err != nil {
 			log.Fatal(err)
 		}
 
@@ -100,7 +100,7 @@ func TenancyByKey(tenancies *[]*tenancy.Tenancy, key string, value string) {
 	instance := tenancy.Create()
 
 	for rows.Next() {
-		if err := rows.Scan(&instance.Id, &instance.Name, &instance.Key); err != nil {
+		if err := rows.Scan(&instance.Id, &instance.Data.Name, &instance.Key); err != nil {
 			log.Fatal(err)
 		}
 

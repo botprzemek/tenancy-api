@@ -11,10 +11,39 @@ import (
 	"strings"
 )
 
-const compressing = true
+const useCompress = true
 
 func Route(route string, handler http.HandlerFunc) {
 	http.Handle(route, middleware.Auth(handler))
+}
+
+func Send(data any, res http.ResponseWriter) {
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		http.Error(res, "Failed to compress JSON", http.StatusInternalServerError)
+		return
+	}
+
+	if useCompress {
+		compressedData, err := compress.Compress(bytes)
+		if err != nil {
+			http.Error(res, "Failed to compress JSON", http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-Encoding", "gzip")
+		_, err = res.Write(compressedData)
+		if err != nil {
+			http.Error(res, "Failed to write compressed JSON", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		_, err := res.Write(bytes)
+		if err != nil {
+			http.Error(res, "Failed to write JSON", http.StatusInternalServerError)
+			return
+		}
+	}
 }
 
 func Authorize(req *http.Request, tenancies *[]*tenancy.Tenancy) bool {
@@ -55,25 +84,5 @@ func GetTenancies(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	data, err := json.Marshal(tenancies)
-	if err != nil {
-		http.Error(res, "Failed to compress JSON", http.StatusInternalServerError)
-		return
-	}
-
-	if compressing {
-		res.Header().Set("Content-Encoding", "gzip")
-
-		data, err = compress.Compress(data)
-		if err != nil {
-			http.Error(res, "Failed to compress JSON", http.StatusInternalServerError)
-			return
-		}
-	}
-
-	_, err = res.Write(data)
-	if err != nil {
-		http.Error(res, "Failed to compress JSON", http.StatusInternalServerError)
-		return
-	}
+	Send(tenancies, res)
 }

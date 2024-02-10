@@ -6,24 +6,28 @@ import (
 
 type Tenancy struct {
 	Id   string `json:"id"`
-	Name string `json:"name"`
 	Key  string `json:"key"`
+	Data Data   `json:"data"`
+}
+
+type Data struct {
+	Name string `json:"name"`
 }
 
 func Create() *Tenancy {
 	return &Tenancy{
 		gen.Id(),
-		"",
 		gen.Key(),
+		Data{""},
 	}
 }
 
-func Name(tenancy *Tenancy, name string) *Tenancy {
-	tenancy.Name = name
+func SetName(tenancy *Tenancy, name string) *Tenancy {
+	tenancy.Data.Name = name
 	return &Tenancy{}
 }
 
-func Key(tenancy *Tenancy, key string) *Tenancy {
+func SetKey(tenancy *Tenancy, key string) *Tenancy {
 	tenancy.Key = key
 	return &Tenancy{}
 }
@@ -32,7 +36,7 @@ func Instance(id string, name string, key string) *Tenancy {
 	return &Tenancy{
 		id,
 		name,
-		key,
+		Data{key},
 	}
 }
 
@@ -40,10 +44,10 @@ func GetId(tenancy *Tenancy) string {
 	return tenancy.Id
 }
 
-func GetName(tenancy *Tenancy) string {
-	return tenancy.Name
-}
-
 func GetKey(tenancy *Tenancy) string {
 	return tenancy.Key
+}
+
+func GetData(tenancy *Tenancy) *Data {
+	return &tenancy.Data
 }
