@@ -1,5 +1,7 @@
 package models
 
+import utils "go-tenancy/utils/hash"
+
 type Tenancy struct {
 	Id   string `json:"id"`
 	Key  string `json:"key"`
@@ -12,8 +14,8 @@ type Data struct {
 
 func (tenancy Tenancy) Create(name string) *Tenancy {
 	return &Tenancy{
-		gen.Id(),
-		gen.Key(),
+		utils.Id(),
+		utils.Key(),
 		Data{
 			name,
 		},
