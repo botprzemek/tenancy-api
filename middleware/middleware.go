@@ -15,14 +15,12 @@ func Auth(handler http.HandlerFunc) http.HandlerFunc {
 			log.Printf("[%v] request rejected from %v\n", req.Method, strings.Split(req.RemoteAddr, ":")[0])
 
 			http.Error(res, "Failed to authenticate, please provide a valid API Key", http.StatusForbidden)
-
 			return
 		}
 
-		log.Printf("[%v] request successed from %v/\n", req.Method, strings.Split(req.RemoteAddr, ":")[0])
+		log.Printf("[%v] request succeed from %v\n", req.Method, strings.Split(req.RemoteAddr, ":")[0]+req.RequestURI)
 
 		res.Header().Set("Content-Type", "application/json")
-
 		handler(res, req)
 	}
 }
