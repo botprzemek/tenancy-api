@@ -14,7 +14,7 @@ func main() {
 	err := godotenv.Load()
 
 	if err != nil {
-		log.Fatal("Error while loading .env file")
+		log.Fatal("[API] error while loading .env file")
 	}
 
 	address := os.Getenv("API_URL")
