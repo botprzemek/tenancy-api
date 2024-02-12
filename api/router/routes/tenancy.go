@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/dlclark/regexp2"
 	"go-tenancy/api/router"
-	"go-tenancy/database"
+	"go-tenancy/storage/database"
 	"go-tenancy/storage/models"
 	"net/http"
 	"strings"

@@ -2,13 +2,20 @@ package router
 
 import (
 	"encoding/json"
-	"go-tenancy/compress"
-	"go-tenancy/middleware"
+	"go-tenancy/api/middleware"
 	"go-tenancy/storage/models"
+	"go-tenancy/utils/compress"
 	"net/http"
 )
 
 const useCompress = true
+
+func Authorize(req *http.Request, tenancies *[]*models.Tenancy) bool {
+	if len(*tenancies) == 0 {
+		return false
+	}
+	return req.Header.Get("authorization") == (*tenancies)[0].Key
+}
 
 func Route(route string, handler http.HandlerFunc) {
 	http.Handle(route, middleware.Auth(handler))
@@ -41,11 +48,4 @@ func Send(data any, res http.ResponseWriter) {
 			return
 		}
 	}
-}
-
-func Authorize(req *http.Request, tenancies *[]*models.Tenancy) bool {
-	if len(*tenancies) == 0 {
-		return false
-	}
-	return req.Header.Get("authorization") == (*tenancies)[0].Key
 }

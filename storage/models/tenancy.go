@@ -1,7 +1,5 @@
 package models
 
-import "go-tenancy/gen"
-
 type Tenancy struct {
 	Id   string `json:"id"`
 	Key  string `json:"key"`

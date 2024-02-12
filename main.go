@@ -4,7 +4,7 @@ import (
 	"github.com/joho/godotenv"
 	"go-tenancy/api/router"
 	"go-tenancy/api/router/routes"
-	"go-tenancy/database"
+	"go-tenancy/storage/database"
 	"log"
 	"net/http"
 	"os"
